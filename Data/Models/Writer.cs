@@ -6,8 +6,6 @@
     public class Writer
     {
 
-
-
         public int Id { get; set; }
 
         [Required]
