@@ -18,6 +18,36 @@ namespace MusicHub.DataProcessor
     {
         public static string ExportAlbumsInfo(MusicHubDbContext context, int producerId)
         {
+
+            var albums = context.Albums
+                .Where(x => x.prod)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             //var albums = context
             //    .Albums
             //    .Where(p => p.ProducerId == producerId)

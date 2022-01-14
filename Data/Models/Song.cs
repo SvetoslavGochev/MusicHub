@@ -36,7 +36,7 @@
         public Writer Writer { get; set; }
 
         [Range(0, double.MaxValue), Required]
-        public decimal Pruice { get; set; } 
+        public decimal Price { get; set; } 
 
         public ICollection<SongPerformer> SongPerformers  { get; set;} = new HashSet<SongPerformer>();
     }
