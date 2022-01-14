@@ -7,6 +7,7 @@ using System.Xml.Serialization;
 using MusicHub.DataProcessor.ExportDtos;
 using Newtonsoft.Json;
 using Formatting = Newtonsoft.Json.Formatting;
+using System.Collections.Generic;
 
 namespace MusicHub.DataProcessor
 {
@@ -20,32 +21,27 @@ namespace MusicHub.DataProcessor
         {
 
             var albums = context.Albums
-                .Where(x => x.prod)
+                .Where(x => x.ProducerId == producerId)
+                .OrderByDescending(x => x.Price)
+                .Select(x => new ExportAlbumDto
+                {
+                    AlbumName = x.Name,
+                    ProducerName = x.Producer.Name,
+                    ReleaseDate = x.ReleaseDate.ToString(@"MM/dd/yyyy"),
+                    Songs = x.Songs.Select(s => new ExportAlbumSongsDto
+                    {
+                        SongName = s.Name,
+                        Price = s.Price.ToString("F2"),
+                        Writer = s.Writer.Name
+                    })
+                    .OrderByDescending(s => s.SongName)
+                    .ThenBy(s => s.Writer)
+                    .ToList(),
+                    AlbumPrice = x.Price.ToString("F2")
+                    
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+                })
+                .ToList();
 
 
             //var albums = context
@@ -70,37 +66,42 @@ namespace MusicHub.DataProcessor
             //    .OrderByDescending(p => decimal.Parse(p.AlbumPrice))
             //    .ToArray();
 
-            //return JsonConvert.SerializeObject(albums, Formatting.Indented);
-            return null;
+            return JsonConvert.SerializeObject(albums, Formatting.Indented);
+   
         }
 
         public static string ExportSongsAboveDuration(MusicHubDbContext context, int duration)
         {
-            //    var songs = context.Songs
-            //        .Where(d => d.Duration.TotalSeconds > duration)
-            //        .Select(x => new ExportSongDto
-            //        {
-            //            SongName = x.Name,
-            //            Writer = x.Writer.Name,
-            //            Performer = x.SongPerformers.Select(p => p.Performer.FirstName + " " + p.Performer.LastName).FirstOrDefault(),
-            //            AlbumProducer = x.Album.Producer.Name,
-            //            Duration = x.Duration.ToString("c")
-            //        })
-            //        .OrderBy(x => x.SongName)
-            //        .ThenBy(w => w.Writer)
-            //        .ToArray();
 
-            //    var xmlSerializer = new XmlSerializer(typeof(ExportSongDto[]), new XmlRootAttribute("Songs"));
 
-            //    var sb = new StringBuilder();
+            var songs = context.Songs
+                .Where(s => s.Duration.TotalSeconds > duration)
+                .Select(s => new ExportSongDto
+                {
+                    SongName = s.Name,
+                    Writer = s.Writer.Name,
+                    Performer = s.SongPerformers
+                    .Select(p => p.Performer.FirstName + " " + p.Performer.LastName).FirstOrDefault(),
+                    Duration = s.Duration.ToString("C")
 
-            //    var namespaces = new XmlSerializerNamespaces(new[]
-            //    {
-            //        XmlQualifiedName.Empty
-            //    });
-            //    xmlSerializer.Serialize(new StringWriter(sb), songs, namespaces);
-            return null;
-            //    return sb.ToString().TrimEnd();
+
+                })
+                .OrderBy(s => s.SongName)
+                .ThenBy(s => s.Writer)
+                .ThenBy(s => s.Performer)
+                .ToList();
+
+
+            var xmlSerializer = new XmlSerializer(typeof(ExportSongDto[]), new XmlRootAttribute("Songs"));
+
+            var sb = new StringBuilder();
+
+            var namespaces = new XmlSerializerNamespaces(new[]
+            {
+                    XmlQualifiedName.Empty
+                });
+            xmlSerializer.Serialize(new StringWriter(sb), songs, namespaces);
+            return sb.ToString().TrimEnd();
         }
     }
 }

@@ -21,6 +21,6 @@
         public int? ProducerId { get; set; }
         public Producer Producer { get; set; }
 
-        public ICollection<Song> Songs { get; set; } = new List<Song>();    
+        public ICollection<Song> Songs { get; set; } = new HashSet<Song>();    
     }
 }
